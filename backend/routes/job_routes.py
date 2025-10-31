@@ -53,6 +53,7 @@ def search_jobs():
             )
 
         # Rank jobs using ML
+        print(" Running semantic ranking with MLService + MatchingService...")
         matched_jobs = matching_service.rank_jobs(
             user_data=data, jobs=jobs, top_k=data.get("max_results", 20)
         )

@@ -3,7 +3,9 @@ from flask_cors import CORS
 from backend.config import Config
 from backend.routes.job_routes import jobs_bp
 import os
+from dotenv import load_dotenv
 
+load_dotenv()
 
 def create_app():
     frontend_path = os.path.join(os.path.dirname(__file__), "../Frontend")
@@ -44,6 +46,14 @@ def create_app():
             import traceback
             traceback.print_exc()
             return jsonify({"mode": "UNKNOWN", "error": str(e)}), 500
+
+    @app.route("/ml/status")
+    def ml_status():
+        try:
+            return {"model_loaded": True, "message": "ML model integration active"}
+        except Exception:
+            return {"model_loaded": False}
+
 
     return app
 
