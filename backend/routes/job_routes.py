@@ -18,6 +18,32 @@ adzuna_service = AdzunaService(
     app_id=os.getenv("ADZUNA_APP_ID"), app_key=os.getenv("ADZUNA_APP_KEY")
 )
 
+def adjust_experience_field(payload: dict) -> dict:
+    """
+    Adjust the 'experience' field in the request payload.
+    Converts numeric experience (e.g., 2) into a level string
+    ('entry', 'mid', 'senior') so that validation passes.
+    """
+    data = dict(payload)
+    exp = data.get("experience")
+
+    # If already a valid text level, leave it alone
+    if isinstance(exp, str) and exp.lower() in ["entry", "mid", "senior"]:
+        return data
+
+    # Convert numeric or numeric-string experience to level
+    if isinstance(exp, (int, float)) or (isinstance(exp, str) and exp.isdigit()):
+        years = int(exp)
+        if years <= 1:
+            level = "entry"
+        elif years <= 4:
+            level = "mid"
+        else:
+            level = "senior"
+        data["experience"] = level
+
+    return data
+
 
 @jobs_bp.route("/")
 def search():
@@ -30,8 +56,11 @@ def search_jobs():
 
     data = request.get_json() or {}
 
-    # Validate request
-    is_valid, error = validate_search_request(data)
+    # Use a *copy* of the payload with adjusted experience ONLY for validation
+    validation_payload = adjust_experience_field(data)
+
+    # Validate request using the adjusted copy
+    is_valid, error = validate_search_request(validation_payload)
     if not is_valid:
         return jsonify({"success": False, "error": error}), 400
 

@@ -31,12 +31,30 @@ class MatchingService:
         if keywords:
             profile_parts.append(f"Looking for: {keywords}")
 
-        if experience < 3:
+        # --- normalize experience to a numeric "years" value ---
+        years = 0
+
+        # If we got a number already
+        if isinstance(experience, (int, float)):
+            years = int(experience)
+
+        # If we got a string
+        elif isinstance(experience, str):
+            exp_str = experience.strip().lower()
+
+            if exp_str.isdigit():
+                years = int(exp_str)
+            elif exp_str in ("entry", "junior"):
+                years = 1
+            elif exp_str in ("mid", "mid-level", "mid level"):
+                years = 4
+            elif exp_str in ("senior", "lead", "principal"):
+                years = 7
+
+        if years < 3:
             profile_parts.append("Entry level position, 0-2 years experience")
-
-        elif experience < 6:
+        elif years < 6:
             profile_parts.append("Mid-level position, 3-5 years experience")
-
         else:
             profile_parts.append("Senior position, 5+ years experience")
 
